@@ -62,6 +62,10 @@ class Cell(QWidget):
         p.setPen(pen)
         p.drawRect(r)
 
+        if self.is_revealed:
+            if self.is_mine:
+                p.drawPixmap(r, QPixmap(IMG_BOMB))
+
 
 class MainWindow(QMainWindow):
     """
@@ -151,6 +155,8 @@ class MainWindow(QMainWindow):
         for _, _, cell in self.get_all_cells():
             cell.reset()
 
+        mine_positions = self.set_mines()
+
     def get_all_cells(self):
         """
         Возвращает все клетки
@@ -159,6 +165,19 @@ class MainWindow(QMainWindow):
             for y in range(self.board_size):
                 yield (x, y, self.grid.itemAtPosition(x, y).widget())
 
+    def set_mines(self):
+        """
+        Установка мин на игровое поле
+        """
+        positions = []
+        while len(positions) < self.n_mines:
+            x = random.randint(0, self.board_size - 1)
+            y = random.randint(0, self.board_size - 1)
+            if (x, y) not in positions:
+                self.grid.itemAtPosition(x, y).widget().is_mine = True
+                positions.append((x, y))
+        return positions
+        
 
 if __name__ == '__main__':
     app = QApplication([])
