@@ -15,6 +15,9 @@ LEVELS = (
     (24, 99)
 )
 
+IMG_BOMB = QImage('./images/bomb.png')
+IMG_CLOCK = QImage('./images/clock.png')
+
 
 class MainWindow(QMainWindow):
     """
@@ -60,12 +63,26 @@ class MainWindow(QMainWindow):
         self.button.setIcon(QIcon('./images/smiley.png'))
         self.button.setFlat(True)
 
+        l = QLabel()
+        l.setPixmap(QPixmap.fromImage(IMG_BOMB))
+        l.setAlignment(Qt.AlignCenter)
+        hb.addWidget(l)
+
         hb.addWidget(self.mines)
         hb.addWidget(self.button)
         hb.addWidget(self.clock)
 
+        l = QLabel()
+        l.setPixmap(QPixmap.fromImage(IMG_CLOCK))
+        l.setAlignment(Qt.AlignCenter)
+        hb.addWidget(l)
+
         vb = QVBoxLayout()
         vb.addLayout(hb)
+
+        self.grid = QGridLayout()
+        self.grid.setSpacing(5)
+        vb.addLayout(self.grid)
 
         w.setLayout(vb)
         self.setCentralWidget(w)
