@@ -76,6 +76,27 @@ class Cell(QWidget):
                 p.setFont(f)
                 p.drawText(r, Qt.AlignCenter, str(self.mines_around))
 
+    def click(self):
+        """
+        Обработка клика по клетке
+        """
+        if not self.is_revealed and not self.is_flagged:
+            self.reveal()
+
+    def reveal(self):
+        """
+        Открытие клетки
+        """
+        if not self.is_revealed:
+            self.reveal_self()
+
+    def reveal_self(self):
+        """
+        Открыть только эту клетку
+        """
+        self.is_revealed = True
+        self.update()
+
 
 class MainWindow(QMainWindow):
     """
@@ -222,7 +243,12 @@ class MainWindow(QMainWindow):
                        in self.get_all_cells()
                        if cell.mines_around == 0 and not cell.is_mine
                       ]
-        empty_cells[random.randint(0, len(empty_cells)-1)].is_start = True
+        start_cell = empty_cells[random.randint(0, len(empty_cells)-1)]
+        start_cell.is_start = True
+
+        for _, _, cell in self.get_around_cells(start_cell.x, start_cell.y):
+            if not cell.is_mine:
+                cell.click()
 
 
 if __name__ == '__main__':
