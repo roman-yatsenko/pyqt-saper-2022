@@ -19,6 +19,7 @@ LEVELS = (
 
 IMG_BOMB = QImage('./images/bomb.png')
 IMG_CLOCK = QImage('./images/clock.png')
+IMG_START = QImage('./images/rocket.png')
 
 
 class Cell(QWidget):
@@ -65,6 +66,8 @@ class Cell(QWidget):
         if self.is_revealed:
             if self.is_mine:
                 p.drawPixmap(r, QPixmap(IMG_BOMB))
+            elif self.is_start:
+                p.drawPixmap(r, QPixmap(IMG_START))
             elif self.mines_around > 0:
                 pen = QPen(Qt.black)
                 p.setPen(pen)
@@ -162,8 +165,9 @@ class MainWindow(QMainWindow):
         for _, _, cell in self.get_all_cells():
             cell.reset()
 
-        mine_positions = self.set_mines()
+        self.set_mines()
         self.calc_mines()
+        self.set_start()
 
     def get_all_cells(self):
         """
@@ -184,7 +188,6 @@ class MainWindow(QMainWindow):
             if (x, y) not in positions:
                 self.grid.itemAtPosition(x, y).widget().is_mine = True
                 positions.append((x, y))
-        return positions
         
     def calc_mines(self):
         """
@@ -209,6 +212,18 @@ class MainWindow(QMainWindow):
             for yi in range(max(0, y-1), min(y+2, self.board_size)):
                 positions.append((xi, yi, self.grid.itemAtPosition(xi, yi).widget()))
         return positions
+
+    def set_start(self):
+        """
+        Выбор начальной клетки
+        """
+        empty_cells = [cell
+                       for x, y, cell
+                       in self.get_all_cells()
+                       if cell.mines_around == 0 and not cell.is_mine
+                      ]
+        empty_cells[random.randint(0, len(empty_cells)-1)].is_start = True
+
 
 if __name__ == '__main__':
     app = QApplication([])
