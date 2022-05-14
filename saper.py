@@ -36,6 +36,18 @@ class Cell(QWidget):
         self.x = x
         self.y = y
 
+    def reset(self):
+        """
+        Сброс клетки
+        """
+        self.is_start = False
+        self.is_mine = False
+        self.adjacent_n = 0
+        self.is_revealed = False
+        self.is_flagged = 0
+        self.is_end = False
+        self.update()
+
     def paintEvent(self, event):
         """
         Событие перерисовки клетки
@@ -68,6 +80,8 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('Сапер')
         self.initUI()
         self.init_map()
+        self.reset_map()
+
         self.setFixedSize(self.sizeHint())
         self.show()
 
@@ -128,6 +142,22 @@ class MainWindow(QMainWindow):
             for y in range(self.board_size):
                 w = Cell(x, y)
                 self.grid.addWidget(w, x, y)
+
+    def reset_map(self):
+        self.n_mines = LEVELS[self.level][1]
+        self.mines.setText(f'{self.n_mines:03d}')
+        self.clock.setText('000')
+
+        for _, _, cell in self.get_all_cells():
+            cell.reset()
+
+    def get_all_cells(self):
+        """
+        Возвращает все клетки
+        """
+        for x in range(self.board_size):
+            for y in range(self.board_size):
+                yield (x, y, self.grid.itemAtPosition(x, y).widget())
 
 
 if __name__ == '__main__':
