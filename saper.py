@@ -196,6 +196,7 @@ class MainWindow(QMainWindow):
         self.button.setIconSize(QSize(32, 32))
         self.button.setIcon(QIcon('./images/smiley.png'))
         self.button.setFlat(True)
+        self.button.pressed.connect(self.button_pressed)
 
         l = QLabel()
         l.setPixmap(QPixmap.fromImage(IMG_BOMB))
@@ -389,6 +390,17 @@ class MainWindow(QMainWindow):
                     for cell in unrevealed:
                         cell.toggle_flag()
                     self.update_status(STATUS_SUCCESS)
+
+    def button_pressed(self):
+        """
+        Обработчик нажатий кнопки на панели инструментов
+        """
+        if self.status == STATUS_PLAY:
+            self.update_status(STATUS_FAILED)
+            self.reveal_map()
+        elif self.status in (STATUS_SUCCESS, STATUS_FAILED):
+            self.update_status(STATUS_READY)
+            self.reset_map()
 
 
 if __name__ == '__main__':
