@@ -57,7 +57,11 @@ class Cell(QWidget):
         p = QPainter(self)
         p.setRenderHint(QPainter.Antialiasing)
         r = event.rect()
-        outer, inner = Qt.gray, Qt.lightGray
+        if self.is_revealed:
+            color = self.palette().color(QPalette.Background)
+            outer, inner = color, color
+        else:
+            outer, inner = Qt.gray, Qt.lightGray
         p.fillRect(r, QBrush(inner))
         pen = QPen(outer)
         pen.setWidth(1)
