@@ -38,6 +38,7 @@ class Cell(QWidget):
     Клетка игрового поля
     """
     expandable = pyqtSignal(int, int)
+    accorded = pyqtSignal(int, int)
     clicked = pyqtSignal()
     flagged = pyqtSignal(bool)
     game_over = pyqtSignal()
@@ -143,6 +144,8 @@ class Cell(QWidget):
         elif event.button() == Qt.RightButton:
             if not self.is_revealed:
                 self.toggle_flag()
+            else:
+                self.accorded.emit(self.x, self.y)
         self.clicked.emit()
                 
 
@@ -234,6 +237,7 @@ class MainWindow(QMainWindow):
                 w.clicked.connect(self.handle_click)
                 w.game_over.connect(self.game_over)
                 w.flagged.connect(self.handle_flag)
+                w.accorded.connect(self.handle_accord)
 
     def reset_map(self):
         self.n_mines = LEVELS[self.level][1]
@@ -314,12 +318,14 @@ class MainWindow(QMainWindow):
         for _, _, cell in self.get_revealable_cells(x, y):
             cell.reveal()
     
-    def get_revealable_cells(self, x, y):
+    def get_revealable_cells(self, x, y, force=False):
         """
         Получить список клеток что можно раскрыть вокруг (x, y)
         """
         for xi, yi, cell in self.get_around_cells(x, y):
-            if not cell.is_mine and not cell.is_flagged and not cell.is_revealed:
+            if ((force or not cell.is_mine) 
+                and not cell.is_flagged 
+                and not cell.is_revealed):
                 yield (xi, yi, cell)
     
     def update_status(self, status):
@@ -402,6 +408,27 @@ class MainWindow(QMainWindow):
             self.update_status(STATUS_READY)
             self.reset_map()
 
+    def determine_to_safe_reveal(self, x, y, to_reveal):
+        """
+        Определить, что можно открыть вокруг открытой клетки
+        """
+        flagged_count = sum(1 if cell.is_flagged else 0 
+                            for _, _, cell in self.get_around_cells(x, y))
+        cell = self.grid.itemAtPosition(x, y).widget()
+        if flagged_count == cell.mines_around:
+            for xi, yi, cell in self.get_revealable_cells(x, y, True):
+                if (xi, yi) not in to_reveal:
+                    to_reveal += [(xi, yi)]
+                    self.determine_to_safe_reveal(xi, yi, to_reveal)
+
+    def handle_accord(self, x, y):
+        """
+        Обработчик сигнала accorded
+        """
+        to_reveal = []
+        self.determine_to_safe_reveal(x, y, to_reveal)
+        for xi, yi in to_reveal:
+            self.grid.itemAtPosition(xi, yi).widget().reveal()
 
 if __name__ == '__main__':
     app = QApplication([])
