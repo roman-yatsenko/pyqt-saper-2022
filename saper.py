@@ -358,6 +358,15 @@ class MainWindow(QMainWindow):
         Обработчик сигнала 'Конец игры'
         """
         self.update_status(STATUS_FAILED)
+        self.reveal_map()
+
+    def reveal_map(self):
+        """
+        Открыть всю карту
+        """
+        for _, _, cell in self.get_all_cells():
+            if not (cell.is_flagged and cell.is_mine):
+                cell.reveal_self()
 
     def check_win(self):
         """
