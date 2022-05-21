@@ -9,8 +9,6 @@ from PyQt5.QtCore import *
 import random
 import time
 
-from numpy import outer
-
 LEVELS = (
     (8, 10),
     (16, 40),
@@ -104,7 +102,14 @@ class Cell(QWidget):
         self.is_revealed = True
         self.update()
 
+    def mouseReleaseEvent(self, event):
+        """
+        Обработчик нажатия кнопоу мыши
+        """
+        if event.button() == Qt.LeftButton:
+            self.click()
 
+            
 class MainWindow(QMainWindow):
     """
     Главное окно программы
