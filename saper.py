@@ -39,6 +39,7 @@ class Cell(QWidget):
     """
     expandable = pyqtSignal(int, int)
     clicked = pyqtSignal()
+    flagged = pyqtSignal(bool)
     game_over = pyqtSignal()
 
     def __init__(self, x, y, *args, **kwargs):
@@ -130,6 +131,7 @@ class Cell(QWidget):
         """
         self.is_flagged = not self.is_flagged
         self.update()
+        self.flagged.emit(self.is_flagged)
 
     def mouseReleaseEvent(self, event):
         """
@@ -229,6 +231,7 @@ class MainWindow(QMainWindow):
                 w.expandable.connect(self.expand_reveal)
                 w.clicked.connect(self.handle_click)
                 w.game_over.connect(self.game_over)
+                w.flagged.connect(self.handle_flag)
 
     def reset_map(self):
         self.n_mines = LEVELS[self.level][1]
@@ -331,6 +334,13 @@ class MainWindow(QMainWindow):
         if self.status == STATUS_READY:
             self.update_status(STATUS_PLAY)
             self._timer_start_nsecs = int(time.time())
+
+    def handle_flag(self, flagged):
+        """
+        Обработчик сигнала flagged
+        """
+        self.n_mines += -1 if flagged else 1
+        self.mines.setText(f'{self.n_mines:03d}')
 
     def update_timer(self):
         """
