@@ -143,6 +143,7 @@ class Cell(QWidget):
         elif event.button() == Qt.RightButton:
             if not self.is_revealed:
                 self.toggle_flag()
+        self.clicked.emit()
                 
 
 class MainWindow(QMainWindow):
@@ -334,6 +335,8 @@ class MainWindow(QMainWindow):
         if self.status == STATUS_READY:
             self.update_status(STATUS_PLAY)
             self._timer_start_nsecs = int(time.time())
+        elif self.status == STATUS_PLAY:
+            self.check_win()
 
     def handle_flag(self, flagged):
         """
@@ -355,6 +358,28 @@ class MainWindow(QMainWindow):
         Обработчик сигнала 'Конец игры'
         """
         self.update_status(STATUS_FAILED)
+
+    def check_win(self):
+        """
+        Проверка победы в игре
+        """
+        if self.n_mines == 0:
+            if all(cell.is_revealed or cell.is_flagged 
+                   for _, _, cell in self.get_all_cells()):
+                self.update_status(STATUS_SUCCESS)
+        else:
+            unrevealed = []
+            for _, _, cell in self.get_all_cells():
+                if not cell.is_revealed and not cell.is_flagged:
+                    unrevealed += [cell]
+                    if not cell.is_mine or len(unrevealed) > self.n_mines:
+                        return
+            if len(unrevealed) == self.n_mines:
+                if all(cell.is_flagged == cell.is_mine or cell in unrevealed
+                       for _, _, cell in self.get_all_cells()):
+                    for cell in unrevealed:
+                        cell.toggle_flag()
+                    self.update_status(STATUS_SUCCESS)
 
 
 if __name__ == '__main__':
