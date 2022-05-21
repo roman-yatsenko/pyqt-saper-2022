@@ -142,6 +142,9 @@ class MainWindow(QMainWindow):
         self.initUI()
         self.init_map()
         self.update_status(STATUS_READY)
+        self._timer = QTimer()
+        self._timer.timeout.connect(self.update_timer)
+        self._timer.start(1000)
         self.reset_map()
 
         self.setFixedSize(self.sizeHint())
@@ -307,6 +310,15 @@ class MainWindow(QMainWindow):
         """
         if self.status == STATUS_READY:
             self.update_status(STATUS_PLAY)
+            self._timer_start_nsecs = int(time.time())
+
+    def update_timer(self):
+        """
+        ОБновить таймер на экране
+        """
+        if self.status == STATUS_PLAY:
+            n_secs = int(time.time()) - self._timer_start_nsecs
+            self.clock.setText(f'{n_secs:03d}')
 
 
 if __name__ == '__main__':
